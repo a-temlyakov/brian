@@ -17,8 +17,6 @@ class Population(Evaluation):
                             num_classes, types)
         self.affinity_matrices["processed_matrix"] = None
 
-        self._list_of_affinities = []
-
     def bullseye(self, total_instances=1, matrix_name = None):
         if matrix_name is None:
             super(Population, self).bullseye(total_instances, 
@@ -41,11 +39,13 @@ class Population(Evaluation):
 
         base_matrix = self.affinity_matrices["base_matrix"]
         processed_matrix = zeros_like(base_matrix)
+        
+        #Fixed k
         idx_top_k = base_matrix.argsort(axis = 1)[:, 0:k]
         
         #Progress bar stuff
-        #prog = pb.progressBar(0, self.total_instances, 77)
-        #oldprog = str(prog)
+        prog = pb.progressBar(0, self.total_instances, 77)
+        oldprog = str(prog)
 
         for i in range(self.total_instances):
             a = set(idx_top_k[i, 0:k])
@@ -59,16 +59,13 @@ class Population(Evaluation):
                 
                 processed_matrix[i, j] = distance
 
-                if distance < 1:
-                    self._list_of_affinities.append(distance)
-
             #More progress bar stuff
-            #prog.updateAmount(i)
-            #if oldprog != str(prog):
-            #    print prog, '\r',
-            #    sys.stdout.flush()
-            #    oldprog = str(prog)
-        #print '\n'
+            prog.updateAmount(i)
+            if oldprog != str(prog):
+                print prog, '\r',
+                sys.stdout.flush()
+                oldprog = str(prog)
+        print '\n'
         
         processed_matrix += processed_matrix.transpose()
         self.affinity_matrices["processed_matrix"] = processed_matrix

@@ -49,9 +49,15 @@ class ComponentTree(object):
         return best_node
 
     def build_tree(self):
+        """ Non-recursive bottom-up construction of the tree
+            at each level the pair-wise relationships are updated
+            between components - where the instances inside components
+            influence each others relationship to instances in other
+            components
+        """
         node_id = 0
         c = Components(self.proc_affinity_matrix)
-        #Build the first level
+        #Build the bottom level
         components, comp_mat = c.get_components(0.0, self.proc_affinity_matrix)
         for component in components:
             base_mat = self.base_affinity_matrix[component,:][:,component]
