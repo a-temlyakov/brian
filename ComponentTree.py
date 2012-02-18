@@ -49,7 +49,16 @@ class ComponentTree(object):
         return best_node
 
     def build_tree(self):
-        """ Non-recursive bottom-up construction of the tree
+        """ Recursive top-down (start at root) construction 
+            of a tree. This construction is static, i.e. it
+            is built from the same processed pair-wise matrix,
+            the relationships do not change based on the level
+            of the tree.
+        """
+        self.build_tree_dynamic()
+
+    def build_tree_dynamic(self):
+        """ Non-recursive bottom-up construction of the tree;
             at each level the pair-wise relationships are updated
             between components - where the instances inside components
             influence each others relationship to instances in other

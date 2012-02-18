@@ -33,13 +33,19 @@ p.bullseye(20, "base_matrix")
 print "Original Top 20: ", p._similarity_score
 #e.print_self("base_matrix")
 print "Generating diff..."
-processed_matrix = p.generate_diff(method="dice", k=14)
+processed_matrix = p.generate_diff(method="dice_fixed", k=14)
 p.bullseye(40, "processed_matrix")
 print "Processed Top 40: ", p._similarity_score
 p.bullseye(20, "processed_matrix")
 print "Processed Top 20: ", p._similarity_score
 
+for i in p._dice_score(14):
+    print i
 
+p.print_self()
+
+
+sys.exit()
 #e = Evaluation(cost_mat, 20, 70)
 #print e.nn_classification()
 

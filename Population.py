@@ -52,7 +52,9 @@ class Population(Evaluation):
             for j in range(i + 1, self.total_instances):
                 b = set(idx_top_k[j, 0:k])
                 
-                if method is "dice":
+                if method is "dice_fixed":
+                    distance = 1 - self._dice_set_diff_fixed(a, b, k)
+                elif method is "dice":
                     distance = 1 - self._dice_set_diff(a, b)
                 elif method is "jaccard":
                     distance = 1 - self._jaccard_set_diff(a, b) 
@@ -71,6 +73,12 @@ class Population(Evaluation):
         self.affinity_matrices["processed_matrix"] = processed_matrix
         return processed_matrix
 
+    def _dice_set_diff_fixed(self, a, b, k):
+        """ Use when k is fixed """
+        set_intersection = a & b;
+        jaccard_index = 2 * len(set_intersection) / float(k+k)
+        return jaccard_index
+
     def _dice_set_diff(self, a, b): 
         jaccard_index = self._jaccard_set_diff(a, b)
         dice_index = (2 * jaccard_index) / (1 + jaccard_index)
@@ -82,6 +90,18 @@ class Population(Evaluation):
         jaccard_index = float(len(set_intersection)) / float(len(set_union))
         return jaccard_index
 
+    def _dice_score(self, k):
+        """ generator creates all possible discrete values
+            that the dice score can become given a fixed k
+        """
+        dice_score = 0
+        inc_frac = 1/float(k)
+
+        while dice_score <= 1:
+            yield dice_score
+            dice_score += inc_frac
+
+    
     def _get_k(self, row):
         pass
 
