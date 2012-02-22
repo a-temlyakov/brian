@@ -9,7 +9,6 @@ from ComponentTree import *
 from Components import *
 import sys
 import os
-#from MultiDiff import *
 #from scipy import stats
 
 data_path = '/home/temlyaka/sandbox/data/'
@@ -33,20 +32,15 @@ p.bullseye(20, "base_matrix")
 print "Original Top 20: ", p._similarity_score
 #e.print_self("base_matrix")
 print "Generating diff..."
-processed_matrix = p.generate_diff(method="dicex", k=14)
+processed_matrix = p.generate_diff(method="dice", k=14)
 p.bullseye(40, "processed_matrix")
 print "Processed Top 40: ", p._similarity_score
 p.bullseye(20, "processed_matrix")
 print "Processed Top 20: ", p._similarity_score
 
-for i in p._dice_score(14):
-    print i
+#print p.nn_classification()
 
-p.print_self()
-
-sys.exit()
-#e = Evaluation(cost_mat, 20, 70)
-#print e.nn_classification()
+#sys.exit()
 
 #c = Components(processed_matrix)
 #c.get_components(0.3)
@@ -58,9 +52,11 @@ sys.exit()
 #print cp._similarity_score
 
 print "TREE METHODS FOLLOW"
-ctree = ComponentTree(cost_mat, processed_matrix, key_list)
+ctree = ComponentTree(cost_mat, processed_matrix, key_list, 14)
 ctree.build_tree()
 
+
+print "Dumping tree to directory..."
 f = open(data_path + '/datasets/mpeg7.types')
 S = []
 for line in f:

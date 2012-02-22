@@ -2,12 +2,13 @@ __author__ = """    Andrew Temlyakov (temlyaka@email.sc.edu)    """
 
 from Node import *
 from Components import *
+from Population import dice_fractions
 import copy
 import os
 
 class ComponentTree(object):
     def __init__(self, base_affinity_matrix, proc_affinity_matrix, key_list,
-    fixed_k = None):
+    fixed_k):
         self.base_affinity_matrix = base_affinity_matrix
         self.proc_affinity_matrix = proc_affinity_matrix
         self.key_list = key_list
@@ -50,16 +51,61 @@ class ComponentTree(object):
         
         return best_node
 
-    def build_tree(self):
+    def build_tree(self, tree_type="static"):
+        """ Entry build_tree function
+        """
+
+        if tree_type is "static":
+            print "Generating a top-down static tree!"
+            self.root_id = 0
+            self._build_tree_static(self.proc_affinity_matrix, 1.0, None)
+        elif tree_type is "dynamic":
+            print "Generating a bottom-up dynamic tree!"
+            self._build_tree_dynamic()
+        else:
+            raise ValueError("Tree type does not exist! Currently Implemented: static, dynamic")
+  
+        print "Cleaning tree..." 
+        self._clean_tree() 
+
+    def _build_tree_static(self, proc_mat, fraction, parent_id):
         """ Recursive top-down (start at root) construction 
             of a tree. This construction is static, i.e. it
             is built from the same processed pair-wise matrix,
             the relationships do not change based on the level
             of the tree.
         """
-        self.build_tree_dynamic()
+    
+        if fraction < 0:
+            return
 
-    def build_tree_dynamic(self):
+        c = Components(proc_mat)
+        components = c.get_components(fraction, proc_mat)[0]
+
+        for component in components:
+            if len(component) == 1:
+                continue
+
+            b_mat = self.base_affinity_matrix[component,:][:,component]
+            p_mat = self.proc_affinity_matrix[component,:][:,component]
+            keys = self.key_list[component]
+            n_id = len(self.nodes)
+            
+            n = Node(component, keys, b_mat, p_mat, n_id)
+            n._parent = parent_id
+
+            n.print_self()
+
+            if parent_id is not None:
+                self.nodes[parent_id]._children.append(n_id)
+            
+            self.nodes[n_id] = n
+            
+            fraction = fraction - 1/float(self.fixed_k)
+            self._build_tree_static(p_mat, fraction, n_id)
+
+
+    def _build_tree_dynamic(self):
         """ Non-recursive bottom-up construction of the tree;
             at each level the pair-wise relationships are updated
             between components - where the instances inside components
@@ -78,12 +124,11 @@ class ComponentTree(object):
             self.nodes[node_id] = n
             node_id += 1
 
-        thresholds = asanyarray(range(1,11))/10.
         node_offset = temp_offset = 0
-        for thresh in thresholds:
+        for fraction in dice_fractions(self.fixed_k):
             temp_offset += len(components) 
             c = Components(comp_mat)
-            components, comp_mat = c.get_components(thresh, comp_mat)
+            components, comp_mat = c.get_components(fraction, comp_mat)
             for component in components:
                 instances = []
                 for instance in component:
@@ -101,7 +146,6 @@ class ComponentTree(object):
   
             node_offset = temp_offset
         self.root_id = node_id - 1
-        self._clean_tree()
 
     def _clean_tree(self):
         """ Initial tree construction has nodes that have a link of
@@ -113,20 +157,20 @@ class ComponentTree(object):
            o
            |
            o
-           |
+          /|\
           ...
 
             This method cleans the tree to remove such links:
             o
            / \
            o  ...
-           |
-           ...
+          /|\ 
+          ...
         """
         nodes = copy.deepcopy(self.nodes)
         for key in self.nodes:
             node = nodes[key]
-            if len(node._children) == 1:
+            if len(node._children) == 1 and node._parent is not None:
                 nodes[node._children[0]]._parent = node._parent
                 
                 #Update the children of the parent

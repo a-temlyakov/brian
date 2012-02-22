@@ -3,9 +3,6 @@ __author__ = """    Andrew Temlyakov (temlyaka@email.sc.edu)    """
 from numpy import *
 from Evaluation import *
 
-#Used for diffirent similarity measures
-#from scipy.spatial.distance import *
-
 #Used for progress bar
 import sys
 import ProgressBar as pb
@@ -47,9 +44,9 @@ class Population(Evaluation):
         prog = pb.progressBar(0, self.total_instances, 77)
         oldprog = str(prog)
 
-        for i in range(self.total_instances):
+        for i in xrange(self.total_instances):
             a = set(idx_top_k[i, 0:k])
-            for j in range(i + 1, self.total_instances):
+            for j in xrange(i + 1, self.total_instances):
                 b = set(idx_top_k[j, 0:k])
                 
                 if method is "dice":
@@ -87,18 +84,6 @@ class Population(Evaluation):
         jaccard_index = float(len(set_intersection)) / float(len(set_union))
         return jaccard_index
 
-    def _dice_score(self, k):
-        """ generator creates all possible discrete values
-            that the dice score can become given a fixed k
-        """
-        dice_score = 0
-        inc_frac = 1/float(k)
-
-        while dice_score <= 1:
-            yield dice_score
-            dice_score += inc_frac
-
-    
     def _get_k(self, row):
         pass
 
@@ -167,4 +152,21 @@ class Population(Evaluation):
             k = sum(histogram[:num_bins])
             self._cost_list[i] = max_cost 
             self._num_bins_list[i] = num_bins
-            self._k_list[i] = k   
+            self._k_list[i] = k  
+            
+             
+def dice_fractions(k):
+    """ generator creates all possible discrete values
+        that the dice score can become given a fixed k
+        e.g. k=4 -> [0.0, 0.25, 0.5, 0.75, 1.0]
+
+        Note: this is not part of the class and can be
+              imported seperately.
+    """
+    dice_score = 0
+    inc_frac = 1/float(k)
+
+    while dice_score <= 1.0:
+        yield dice_score
+        dice_score += inc_frac
+

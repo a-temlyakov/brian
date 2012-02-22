@@ -32,8 +32,8 @@ class Components(object):
         similarity_graph.add_nodes_from(range(num_instances))
 
         #build the graph from upper triangular
-        for i in range(num_instances):
-            for j in range(i + 1, num_instances):
+        for i in xrange(num_instances):
+            for j in xrange(i + 1, num_instances):
                 if distances[i, j] <= threshold:
                     similarity_graph.add_edge(i, j, weight = distances[i, j])
 
@@ -49,7 +49,7 @@ class Components(object):
                     zeros((self._total_components, self._total_components))
 
         for i, temp_component in enumerate(self._connected_components):
-            for j in range(i + 1, self._total_components):
+            for j in xrange(i + 1, self._total_components):
                 component_affinity_matrix[i, j] = \
                                      self.__component_diff(temp_component,
                                             self._connected_components[j],
@@ -77,7 +77,7 @@ class Components(object):
 
         for i, temp_component in enumerate(self._connected_components):
             for key in temp_component:
-                for j in range(self._total_components):
+                for j in xrange(self._total_components):
                     component = self._connected_components[comp_sort_idx[i,j]]
                     for target in component:
                        comp_matrix[key,target] = float(j) + \
