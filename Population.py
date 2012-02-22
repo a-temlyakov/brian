@@ -52,12 +52,13 @@ class Population(Evaluation):
             for j in range(i + 1, self.total_instances):
                 b = set(idx_top_k[j, 0:k])
                 
-                if method is "dice_fixed":
-                    distance = 1 - self._dice_set_diff_fixed(a, b, k)
-                elif method is "dice":
+                if method is "dice":
                     distance = 1 - self._dice_set_diff(a, b)
                 elif method is "jaccard":
                     distance = 1 - self._jaccard_set_diff(a, b) 
+                else:
+                    raise ValueError("Comparison algorithm not found. \
+                                      Currently implemented: dice, jaccard")
                 
                 processed_matrix[i, j] = distance
 
@@ -73,18 +74,14 @@ class Population(Evaluation):
         self.affinity_matrices["processed_matrix"] = processed_matrix
         return processed_matrix
 
-    def _dice_set_diff_fixed(self, a, b, k):
-        """ Use when k is fixed """
+    def _dice_set_diff(self, a, b):
+        """ Compute the Dice's similarity of sets a and b """
         set_intersection = a & b;
-        jaccard_index = 2 * len(set_intersection) / float(k+k)
-        return jaccard_index
-
-    def _dice_set_diff(self, a, b): 
-        jaccard_index = self._jaccard_set_diff(a, b)
-        dice_index = (2 * jaccard_index) / (1 + jaccard_index)
-        return dice_index           
+        dice_index = 2 * len(set_intersection) / float(len(a) + len(b))
+        return dice_index
  
     def _jaccard_set_diff(self, a, b):
+        """ Compute the Jaccard similarity of sets a and b """
         set_intersection = a & b
         set_union = a | b
         jaccard_index = float(len(set_intersection)) / float(len(set_union))

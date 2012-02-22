@@ -12,11 +12,11 @@ import os
 #from MultiDiff import *
 #from scipy import stats
 
-data_path = '/home/temlyaka/Research/sandbox/data/'
+data_path = '/home/temlyaka/sandbox/data/'
 print "Loading", sys.argv[1], "similarity matrix..."
 #cost_mat = genfromtxt(data_path + '/cost_matrices/' + sys.argv[1])
 #cost_mat = (cost_mat + cost_mat.transpose()) / 2.0
-cost_mat = load(data_path + '/cost_matrices/' + sys.argv[1])
+cost_mat = load(data_path + '/cost-matrices/' + sys.argv[1])
 
 #e = Evaluation(cost_mat, 20, 70)
 #e.bullseye(40, "base_matrix")
@@ -33,7 +33,7 @@ p.bullseye(20, "base_matrix")
 print "Original Top 20: ", p._similarity_score
 #e.print_self("base_matrix")
 print "Generating diff..."
-processed_matrix = p.generate_diff(method="dice_fixed", k=14)
+processed_matrix = p.generate_diff(method="dicex", k=14)
 p.bullseye(40, "processed_matrix")
 print "Processed Top 40: ", p._similarity_score
 p.bullseye(20, "processed_matrix")
@@ -43,7 +43,6 @@ for i in p._dice_score(14):
     print i
 
 p.print_self()
-
 
 sys.exit()
 #e = Evaluation(cost_mat, 20, 70)

@@ -6,12 +6,14 @@ import copy
 import os
 
 class ComponentTree(object):
-    def __init__(self, base_affinity_matrix, proc_affinity_matrix, key_list):
+    def __init__(self, base_affinity_matrix, proc_affinity_matrix, key_list,
+    fixed_k = None):
         self.base_affinity_matrix = base_affinity_matrix
         self.proc_affinity_matrix = proc_affinity_matrix
         self.key_list = key_list
         self.root_id = None        
         self.nodes = {}
+        self.fixed_k = fixed_k
         
     def find_instance(self, instance, sim_list):
         if self.root_id is None:

@@ -2,7 +2,6 @@ __author__ = """    Andrew Temlyakov (temlyaka@email.sc.edu)    """
 
 from Population import *
 from operator import itemgetter
-from scikits.learn.cluster import AffinityPropagation
 import networkx as nx
 
 class Components(object):
@@ -20,30 +19,6 @@ class Components(object):
         print "Total Components: ", self._total_components
         print "Component Centers: ", self._component_centers
         
-
-    def affinity_propagation(self, affinity_matrix=None):
-        if affinity_matrix is None:
-            distances = -self.affinity_matrix
-        else:
-            distances = -affinity_matrix
-
-        p = 0.42 * median(distances)
-        ap = AffinityPropagation()
-        ap.fit(distances, p)
-
-        self._component_centers = ap.cluster_centers_indices_
-
-        #Convert found labels into a list of components with a list of
-        #instances belong to each component
-        connected_components = [] 
-        for i in range(max(ap.labels_)+1):
-            list_of_instances = list(where(ap.labels_ == i)[0]) 
-            connected_components.append(list_of_instances)
-      
-        #self.affinity_matrices["processed_matrix"] = -distances
-        self._connected_components = connected_components
-        self._total_components = len(ap.cluster_centers_indices_)
-
     def get_components(self, threshold, affinity_matrix=None):
         similarity_graph = nx.Graph()
 
