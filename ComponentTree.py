@@ -87,9 +87,6 @@ class ComponentTree(object):
         components = c.get_components(fraction, proc_mat)[0]
 
         for component in components:
-            #if len(component) == 1:
-            #    continue
-            
             i_map = idx_map[component]
             print i_map
             b_mat = self.base_affinity_matrix[i_map,:][:,i_map]
@@ -99,8 +96,6 @@ class ComponentTree(object):
             
             n = Node(i_map, keys, b_mat, p_mat, n_id)
             n._parent = parent_id
-
-            #n.print_self()
 
             if parent_id is not None:
                 self.nodes[parent_id]._children.append(n_id)
