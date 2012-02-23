@@ -58,7 +58,11 @@ class ComponentTree(object):
         if tree_type is "static":
             print "Generating a top-down static tree!"
             self.root_id = 0
-            self._build_tree_static(self.proc_affinity_matrix, 1.0, None)
+            idx_map = asanyarray(range(len(self.base_affinity_matrix)))
+            self._build_tree_static(self.proc_affinity_matrix, \
+                                    1.0, \
+                                    None, \
+                                    idx_map)
         elif tree_type is "dynamic":
             print "Generating a bottom-up dynamic tree!"
             self._build_tree_dynamic()
@@ -68,7 +72,7 @@ class ComponentTree(object):
         print "Cleaning tree..." 
         self._clean_tree() 
 
-    def _build_tree_static(self, proc_mat, fraction, parent_id):
+    def _build_tree_static(self, proc_mat, fraction, parent_id, idx_map):
         """ Recursive top-down (start at root) construction 
             of a tree. This construction is static, i.e. it
             is built from the same processed pair-wise matrix,
@@ -83,18 +87,20 @@ class ComponentTree(object):
         components = c.get_components(fraction, proc_mat)[0]
 
         for component in components:
-            if len(component) == 1:
-                continue
-
-            b_mat = self.base_affinity_matrix[component,:][:,component]
-            p_mat = self.proc_affinity_matrix[component,:][:,component]
-            keys = self.key_list[component]
+            #if len(component) == 1:
+            #    continue
+            
+            i_map = idx_map[component]
+            print i_map
+            b_mat = self.base_affinity_matrix[i_map,:][:,i_map]
+            p_mat = self.proc_affinity_matrix[i_map,:][:,i_map]
+            keys = self.key_list[i_map]
             n_id = len(self.nodes)
             
-            n = Node(component, keys, b_mat, p_mat, n_id)
+            n = Node(i_map, keys, b_mat, p_mat, n_id)
             n._parent = parent_id
 
-            n.print_self()
+            #n.print_self()
 
             if parent_id is not None:
                 self.nodes[parent_id]._children.append(n_id)
@@ -102,7 +108,7 @@ class ComponentTree(object):
             self.nodes[n_id] = n
             
             fraction = fraction - 1/float(self.fixed_k)
-            self._build_tree_static(p_mat, fraction, n_id)
+            self._build_tree_static(p_mat, fraction, n_id, i_map)
 
 
     def _build_tree_dynamic(self):
