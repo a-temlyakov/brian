@@ -45,6 +45,10 @@ class Node(object):
         return self.base_similarity_matrix.min()
 
     @property
+    def mean_distance(self):
+        pass
+
+    @property
     def confidence(self):
         """ This measures how many instances of the same class 
             are in the node """

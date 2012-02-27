@@ -6,8 +6,8 @@ from numpy import *
 from Population import *
 from ComponentTree import *
 
-path = '/home/temlyaka/Research/sandbox/data/cost_matrices/'
-cost_mat = genfromtxt(path + sys.argv[1])
+path = '/home/temlyaka/sandbox/data/cost-matrices/'
+cost_mat = load(path + sys.argv[1])
 cost_mat = (cost_mat + cost_mat.transpose()) / 2.0
 
 #key_list = array([], int)
@@ -22,13 +22,14 @@ for idx in range(start_idx, end_idx):
     #remove the rows and columns of instance under consideration
     temp_mat = delete(cost_mat, s_[idx], axis = 0)
     test_mat = delete(temp_mat, s_[idx], axis = 1)
+    print test_mat
 
     p = Population(test_mat, 20, 70)
-    processed_matrix = p.generate_diff(method="dice", k=15)
+    processed_matrix = p.generate_diff(method="dice", k=13)
 
     k_list = delete(key_list, idx)
-    ctree = ComponentTree(test_mat, processed_matrix, k_list)
-    ctree.build_tree()
+    ctree = ComponentTree(test_mat, processed_matrix, k_list, 13)
+    ctree.build_tree("dynamic")
 
     sim_list = delete(cost_mat[idx,:], idx)
     bnode = ctree.find_instance(idx, sim_list)

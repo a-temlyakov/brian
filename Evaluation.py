@@ -1,7 +1,6 @@
 __author__ = """    Andrew Temlyakov (temlyaka@email.sc.edu)    """
 
 from numpy import *
-import pylab as pl
 
 class Evaluation(object):
     def __init__(self, affinity_matrix, instances_per_class, num_classes, \
@@ -22,9 +21,7 @@ class Evaluation(object):
         self.number_of_classes = num_classes
         self.total_instances = len(affinity_matrix)
         
-        if types is None:
-            pass
-        else:
+        if types is not None:
             self.types = types
                 
         #Private variables (values may change)
@@ -102,11 +99,11 @@ class Evaluation(object):
 
         return correct / float(self.total_instances)
 
-    def _plot_scores(self, start_idx, stop_idx):
-        #to-do: needs re-write
-        sim_mat = copy(self.similarity_matrix)
-        sim_mat.sort(axis=1)
-        for i in range(start_idx, stop_idx):
-            pl.plot(sim_mat[i, :], 'b.')
-        pl.show()
+def get_shape_name(shape_names, index, shapes_per_class):
+    """ Returns an actual shape name, e.g. 'Bone-18'
+    """
+    shape_idx = int(ceil(float(index+1)/float(shapes_per_class)))
+    shape_num = (index+1) - shapes_per_class * shape_idx + shapes_per_class
 
+    shape_name = shape_names[shape_idx-1] + '-' + str(shape_num)
+    return shape_name

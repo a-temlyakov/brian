@@ -9,6 +9,8 @@ from ComponentTree import *
 from Components import *
 import sys
 import os
+import cPickle as pickle
+
 #from scipy import stats
 
 data_path = '/home/temlyaka/sandbox/data/'
@@ -53,8 +55,7 @@ print "Processed Top 20: ", p._similarity_score
 
 print "TREE METHODS FOLLOW"
 ctree = ComponentTree(cost_mat, processed_matrix, key_list, 14)
-ctree.build_tree()
-
+ctree.build_tree("dynamic")
 
 print "Dumping tree to directory..."
 f = open(data_path + '/datasets/mpeg7.types')
@@ -63,10 +64,11 @@ for line in f:
     S.append(line[:-1])
 f.close()
 
-os.system('mkdir tree')
+os.system('mkdir tree_dynamic')
 ctree.dump_tree_to_directory(S, ctree.root_id,
                              data_path + '/datasets/mpeg7/inverted',
-                             'tree')
+                             'tree_dynamic')
+
 
 
 #cp = Evaluation(cm, 20, 70)

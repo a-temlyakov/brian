@@ -3,12 +3,16 @@ __author__ = """    Andrew Temlyakov (temlyaka@email.sc.edu)    """
 from Node import *
 from Components import *
 from Population import dice_fractions
+from Evaluation import get_shape_name
 import copy
 import os
 
 class ComponentTree(object):
-    def __init__(self, base_affinity_matrix, proc_affinity_matrix, key_list,
-    fixed_k):
+    def __init__(self, base_affinity_matrix, 
+                       proc_affinity_matrix, 
+                       key_list,
+                       fixed_k):
+
         self.base_affinity_matrix = base_affinity_matrix
         self.proc_affinity_matrix = proc_affinity_matrix
         self.key_list = key_list
@@ -55,6 +59,13 @@ class ComponentTree(object):
         """ Entry build_tree function
         """
 
+        if self.root_id is not None:
+            """ Tree has been previously created
+                Re-set all values to build a fresh tree
+            """
+            self.root_id = None
+            self.nodes = {}
+
         if tree_type is "static":
             print "Generating a top-down static tree!"
             self.root_id = 0
@@ -69,8 +80,8 @@ class ComponentTree(object):
         else:
             raise ValueError("Tree type does not exist! Currently Implemented: static, dynamic")
   
-        print "Cleaning tree..." 
-        self._clean_tree() 
+        #print "Cleaning tree..." 
+        #self._clean_tree() 
 
     def _build_tree_static(self, proc_mat, fraction, parent_id, idx_map):
         """ Recursive top-down (start at root) construction 
@@ -88,7 +99,6 @@ class ComponentTree(object):
 
         for component in components:
             i_map = idx_map[component]
-            print i_map
             b_mat = self.base_affinity_matrix[i_map,:][:,i_map]
             p_mat = self.proc_affinity_matrix[i_map,:][:,i_map]
             keys = self.key_list[i_map]
@@ -183,11 +193,11 @@ class ComponentTree(object):
 
         self.nodes = nodes
 
-    def dump_tree_to_directory(self, S, n_id, in_path, out_path):
+    def dump_tree_to_directory(self, shape_names, n_id, in_path, out_path):
         node_instances = self.nodes[n_id].list_of_instances
 
         for instance in node_instances:
-            s_name = self._get_shape_name(S, instance, 20)
+            s_name = get_shape_name(shape_names, instance, 20)
             command = 'ln -s ' + in_path + '/' + s_name + '.gif ' + out_path
             os.system(command)
 
@@ -203,12 +213,6 @@ class ComponentTree(object):
                 os.system('mkdir ' + o_path)
 
                 n_keys = self.nodes[key]._children
-                self.dump_tree_to_directory(S, key, in_path, o_path)
+                self.dump_tree_to_directory(shape_names, key, in_path, o_path)
             return 1
 
-    def _get_shape_name(self, S, index, total_shapes):
-        shape_idx = int(ceil(float(index+1)/float(total_shapes)))
-        shape_num = (index+1) - total_shapes * shape_idx + total_shapes
-
-        shape_name = S[shape_idx-1] + '-' + str(shape_num)
-        return shape_name
