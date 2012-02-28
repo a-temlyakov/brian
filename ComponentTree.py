@@ -124,9 +124,12 @@ class ComponentTree(object):
             components
         """
         node_id = 0
+        fractions = dice_fractions(self.fixed_k)
+
         c = Components(self.proc_affinity_matrix)
         #Build the bottom level
-        components, comp_mat = c.get_components(0.0, self.proc_affinity_matrix)
+        components, comp_mat = c.get_components(fractions.next(), 
+                                                self.proc_affinity_matrix)
         for component in components:
             base_mat = self.base_affinity_matrix[component,:][:,component]
             proc_mat = self.proc_affinity_matrix[component,:][:,component]
@@ -136,7 +139,7 @@ class ComponentTree(object):
             node_id += 1
 
         node_offset = temp_offset = 0
-        for fraction in dice_fractions(self.fixed_k):
+        for fraction in fractions:
             temp_offset += len(components) 
             c = Components(comp_mat)
             components, comp_mat = c.get_components(fraction, comp_mat)

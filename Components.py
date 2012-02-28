@@ -31,7 +31,7 @@ class Components(object):
 
         similarity_graph.add_nodes_from(range(num_instances))
 
-        #build the graph from upper triangular
+        """ build the graph from upper triangular """
         for i in xrange(num_instances):
             for j in xrange(i + 1, num_instances):
                 if distances[i, j] <= threshold:

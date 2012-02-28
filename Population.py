@@ -163,10 +163,8 @@ def dice_fractions(k):
         Note: this is not part of the class and can be
               imported seperately.
     """
-    dice_score = 0
-    inc_frac = 1/float(k)
 
-    while dice_score <= 1.0:
+    for i in xrange(k+1):
+        dice_score = i / float(k)
         yield dice_score
-        dice_score += inc_frac
 

@@ -34,7 +34,7 @@ p.bullseye(20, "base_matrix")
 print "Original Top 20: ", p._similarity_score
 #e.print_self("base_matrix")
 print "Generating diff..."
-processed_matrix = p.generate_diff(method="dice", k=14)
+processed_matrix = p.generate_diff(method="dice", k=13)
 p.bullseye(40, "processed_matrix")
 print "Processed Top 40: ", p._similarity_score
 p.bullseye(20, "processed_matrix")
@@ -54,7 +54,7 @@ print "Processed Top 20: ", p._similarity_score
 #print cp._similarity_score
 
 print "TREE METHODS FOLLOW"
-ctree = ComponentTree(cost_mat, processed_matrix, key_list, 14)
+ctree = ComponentTree(cost_mat, processed_matrix, key_list, 13)
 ctree.build_tree("dynamic")
 
 print "Dumping tree to directory..."
