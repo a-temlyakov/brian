@@ -19,6 +19,51 @@ class ComponentTree(object):
         self.root_id = None        
         self.nodes = {}
         self.fixed_k = fixed_k
+
+        self._inf = 1e6
+    
+    def get_instance(self, node_id, instance, sim_list):
+        """ Check all paths whos prototype score
+            with the template instance is less than
+            the max score 
+        
+            TO-DO: Still potential bugs!!!
+        """
+
+        if self.root_id is None:
+            raise ValueError("Tree does not exist.")
+
+        children = self.nodes[node_id]._children
+
+        if len(children) == 0:
+            return self._inf, 0, -1
+
+        best_nodes = {}    
+
+        for child in children:
+            p_id = self.nodes[child].prototype_id
+            sim_score = sim_list[p_id]
+
+            if sim_score <= self.nodes[child].max_distance:
+                if self.nodes[child].confidence == 1.0:
+                    return sim_score, len(children), child
+                else:
+                    best_nodes[child] = \
+                        self.get_instance(child, instance, sim_list) 
+
+        sum_comparisons = 0
+        min_score = self._inf
+        best_node = -1
+        for key in best_nodes:
+            sum_comparisons += best_nodes[key][1]
+
+            if best_nodes[key][0] < min_score:
+                min_score = best_nodes[key][0]
+                best_node = key
+
+        return min_score, sum_comparisons+len(children), best_node
+
+        
         
     def find_instance(self, instance, sim_list):
         if self.root_id is None:
@@ -27,9 +72,16 @@ class ComponentTree(object):
 
         best_node = self.root_id
         best_node_found = False
-
+        sum_comparisons = 0
+        
         while best_node_found is False:
             children = self.nodes[best_node]._children
+            
+            if not children:
+                break
+            
+            sum_comparisons += len(children)
+
             best_node = self._find_best_node(children, instance, sim_list)
             
             if best_node is None:
@@ -39,10 +91,10 @@ class ComponentTree(object):
             if self.nodes[best_node].confidence == 1.0:
                 best_node_found = True
 
-        return best_node
+        return best_node, sum_comparisons
 
     def _find_best_node(self, children, index, sim_list):
-        min_score = 1e6
+        min_score = self._inf
         best_node = None
         for child in children:
             p_id = self.nodes[child].prototype_id
@@ -67,7 +119,7 @@ class ComponentTree(object):
             self.nodes = {}
 
         if tree_type is "static":
-            print "Generating a top-down static tree!"
+            #print "Generating a top-down static tree!"
             self.root_id = 0
             idx_map = asanyarray(range(len(self.base_affinity_matrix)))
             self._build_tree_static(self.proc_affinity_matrix, \
@@ -75,13 +127,13 @@ class ComponentTree(object):
                                     None, \
                                     idx_map)
         elif tree_type is "dynamic":
-            print "Generating a bottom-up dynamic tree!"
+            #print "Generating a bottom-up dynamic tree!"
             self._build_tree_dynamic()
         else:
             raise ValueError("Tree type does not exist! Currently Implemented: static, dynamic")
   
         #print "Cleaning tree..." 
-        #self._clean_tree() 
+        self._clean_tree() 
 
     def _build_tree_static(self, proc_mat, fraction, parent_id, idx_map):
         """ Recursive top-down (start at root) construction 

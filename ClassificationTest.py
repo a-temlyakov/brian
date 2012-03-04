@@ -30,11 +30,18 @@ for idx in range(start_idx, end_idx):
     ctree = ComponentTree(test_mat, processed_matrix, k_list, 13)
     ctree.build_tree("dynamic")
 
+
     sim_list = delete(cost_mat[idx,:], idx)
-    bnode = ctree.find_instance(idx, sim_list)
+
+    #print "Getting instance"
+    #sim_score, bnode, sum_comparisons = \
+        #ctree.get_instance(ctree.root_id, idx, sim_list)
+
+    bnode, sum_comparisons = ctree.find_instance(idx, sim_list)
+
     #ctree.nodes[bnode].print_self()
-    print ctree.nodes[bnode]._max_key_idx, key_list[idx]
+    #print ctree.nodes[bnode]._max_key_idx, key_list[idx]
     if ctree.nodes[bnode]._max_key_idx == key_list[idx]:
-        print "Correct!"
+        print "1", sum_comparisons
     else:
-        print "Wrong!"
+        print "0", sum_comparisons
