@@ -1,7 +1,9 @@
 __author__ = """    Andrew Temlyakov (temlyaka@email.sc.edu)    """
 
 from numpy import *
+from scipy import stats
 from Evaluation import *
+
 
 #Used for progress bar
 import sys
@@ -13,6 +15,10 @@ class Population(Evaluation):
         Evaluation.__init__(self, affinity_matrix, instances_per_class, \
                             num_classes, types)
         self.affinity_matrices["processed_matrix"] = None
+
+        self._cost_list = [0] * self.total_instances
+        self._num_bins_list = [0] * self.total_instances
+        self._k_list = [0] * self.total_instances
 
     def bullseye(self, total_instances=1, matrix_name = None):
         if matrix_name is None:
@@ -84,15 +90,27 @@ class Population(Evaluation):
         jaccard_index = float(len(set_intersection)) / float(len(set_union))
         return jaccard_index
 
-    def _get_k(self, row):
-        pass
+    def _get_k(self):
+        K_list = []
+        for i in xrange(self.total_instances):
+            sim_row = self.affinity_matrices["base_matrix"][i, :]
+
+            """ delete the score with itself (0) """
+            sim_row = delete(sim_row, i)
+
+            mu = mean(sim_row)
+            sd = std(sim_row)
+
+            K_list.append(sum([s < (mu - 2*sd) for s in sim_row]))
+
+        return stats.mode(K_list), median(K_list), mean(K_list)
 
     def _build_histogram(self, sim_row):
         """ This method computes a histogram for a similarity row, 
             where bins are determined by standard deviations of the 
             pair-wise similarities for a given template instance 
         """    
-        num_sd = 4
+        num_sd = 2
         mu = mean(sim_row)
         sd = std(sim_row)
         v = var(sim_row)
@@ -113,10 +131,11 @@ class Population(Evaluation):
         pl.show() 
 
     def _balance_histograms(self):       
+        base_matrix = self.affinity_matrices["base_matrix"]
  
         for i in range(self.total_instances):
             #print "i:", i
-            histogram = self._build_histogram(self.similarity_matrix[i,:])
+            histogram = self._build_histogram(base_matrix[i,:])
             #print histogram
             #self._plot_histogram(histogram)
     
