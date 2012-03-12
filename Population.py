@@ -3,11 +3,13 @@ __author__ = """    Andrew Temlyakov (temlyaka@email.sc.edu)    """
 from numpy import *
 from scipy import stats
 from Evaluation import *
-
+import pylab as pl
 
 #Used for progress bar
 import sys
 import ProgressBar as pb
+
+
 
 class Population(Evaluation):
     def __init__(self, affinity_matrix, instances_per_class, num_classes, \
@@ -109,25 +111,34 @@ class Population(Evaluation):
         """ This method computes a histogram for a similarity row, 
             where bins are determined by standard deviations of the 
             pair-wise similarities for a given template instance 
+        
+            Computes only the left side of the histogram, that is
+            all similarities that are less than the mean
         """    
-        num_sd = 2
+        num_bins = 16
+        bin_width = 0.25
+        num_sd = int(num_bins * bin_width)
+
         mu = mean(sim_row)
         sd = std(sim_row)
         v = var(sim_row)
 
         #print "mu: ", mu, "std: ", sd, "var: ", v
     
-        hist = zeros(16)
+        hist = zeros(num_bins+2)
 
         for j in range(len(hist)):
             hist[j] = sum([s < mu - num_sd*sd for s in sim_row]) - sum(hist)
-            num_sd = num_sd - 0.25
+            num_sd = num_sd - bin_width
 
         return hist 
  
     def _plot_histogram(self, histogram):
         pos = arange(len(histogram))
-        pl.bar(pos, histogram, 1.0, color='b')
+        pl.bar(pos, histogram, 0.90, color='b')
+        pl.xticks(pos+0.90/2., ('-4','','','','-3','','','','-2','','','','-1','','','','0'))
+        pl.ylabel('Bin Size')
+        pl.xlabel('Number of standard deviations away from the mean')
         pl.show() 
 
     def _balance_histograms(self):       
