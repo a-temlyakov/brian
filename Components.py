@@ -9,7 +9,6 @@ class Components(object):
         self.affinity_matrix = affinity_matrix
         self._connected_components = None
         self._component_affinity_matrix = None
-        self._component_centers = None
         self._total_components = 1
 
     def print_self(self):
@@ -17,18 +16,41 @@ class Components(object):
         print "Connected Components: ", self._connected_components
         print "Component Affinity Matrix: ", self._component_affinity_matrix
         print "Total Components: ", self._total_components
-        print "Component Centers: ", self._component_centers
         
-    def get_components(self, threshold, affinity_matrix=None):
-        similarity_graph = nx.Graph()
-
+    def get_components(self, threshold, 
+                             affinity_matrix=None, 
+                             strongly_connected=False):
+        """ Given a threshold and an affinity matrix of pair-wise 
+            similarities, return a set of connected components
+            and the resulting pair-wise similarities between them. 
+        """     
         if affinity_matrix is None:
             distances = self.affinity_matrix
         else:
             distances = affinity_matrix
        
-        num_instances = len(distances)
+        similarity_graph = self._build_graph(distances, threshold)
+       
+        if strongly_connected is False: 
+            self._connected_components = \
+                        nx.connected_components(similarity_graph)
+        else:
+            self._connected_components = \
+                        nx.strongly_connected_components(similarity_graph)
 
+        self._total_components = len(self._connected_components)
+        self._component_affinity_matrix = \
+                        self._get_component_difference(distances)
+        return self._connected_components, self._component_affinity_matrix
+
+    def _build_graph(self, distances, threshold):
+        """ Build a graph from a matrix of pair-wise similarities,
+            where each similarity is used as weight for the edge
+            and each instance in the matrix is the node/vertex.
+        """
+        similarity_graph = nx.Graph()
+        num_instances = len(distances)
+        
         similarity_graph.add_nodes_from(range(num_instances))
 
         """ build the graph from upper triangular """
@@ -36,15 +58,13 @@ class Components(object):
             for j in xrange(i + 1, num_instances):
                 if distances[i, j] <= threshold:
                     similarity_graph.add_edge(i, j, weight = distances[i, j])
-
-        self._connected_components = \
-                        nx.connected_components(similarity_graph)
-        self._total_components = len(self._connected_components)
-        self._component_affinity_matrix = \
-                        self._get_component_difference(distances)
-        return self._connected_components, self._component_affinity_matrix
+    
+        return similarity_graph
 
     def _get_component_difference(self, distances):
+        """ Constructs a similarity matrix for components,
+            C_n by C_n, where C_n is the number of compnents.
+        """
         component_affinity_matrix = \
                     zeros((self._total_components, self._total_components))
 
@@ -67,6 +87,11 @@ class Components(object):
         return score_sum / float(len(temp_component))
 
     def _expand_component_difference(self, affinity_matrix=None):
+        """ Re-builds the pair-wise similarity matrix between all 
+            instances in the dataset
+
+            to-do: This method is in dire need of refactoring!
+        """
         if affinity_matrix is None:
             distances = self.affinity_matrix
         else:

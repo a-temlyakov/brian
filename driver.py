@@ -22,11 +22,10 @@ cost_mat = genfromtxt(data_path + '/cost-matrices/' + sys.argv[1])
 cost_mat = (cost_mat + cost_mat.transpose()) / 2.0
 
 e = Evaluation(cost_mat, 20, 70)
-print e.nn_classification()
+#print e.nn_classification()
 
-sys.exit()
-#e.bullseye(40, "base_matrix")
-#print "Bullseye: ", e._similarity_score
+e.bullseye(40, "base_matrix")
+print "Bullseye: ", e._similarity_score
 
 #key_list = array([], int)
 #for i in range(70):
@@ -34,6 +33,17 @@ sys.exit()
 
 #p = Population(cost_mat, 75, 15)
 p = Population(cost_mat, 20, 70)
+processed_matrix = p.generate_diff()
+
+c = Components(processed_matrix)
+c.get_components(0.3, strongly_connected=True)
+comp_mat = c._expand_component_difference()
+cp = Evaluation(comp_mat, 20, 70)
+cp.bullseye(40)
+print cp._similarity_score
+cp.bullseye(20)
+print cp._similarity_score
+sys.exit()
 
 #p.bullseye(40, "base_matrix")
 shape_idx = 14
@@ -70,14 +80,6 @@ print get_shape_name(S, shape_idx, 20)
 
 #sys.exit()
 
-#c = Components(processed_matrix)
-#c.get_components(0.3)
-#comp_mat = c._expand_component_difference()
-#cp = Evaluation(comp_mat, 20, 70)
-#cp.bullseye(40)
-#print cp._similarity_score
-#cp.bullseye(20)
-#print cp._similarity_score
 
 #print "TREE METHODS FOLLOW"
 #ctree = ComponentTree(cost_mat, processed_matrix, key_list, 13)

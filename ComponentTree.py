@@ -28,6 +28,8 @@ class ComponentTree(object):
             the max score 
         
             TO-DO: Still potential bugs!!!
+            This method is currently NOT being used
+            Use self.find_instance instead
         """
 
         if self.root_id is None:
@@ -62,8 +64,6 @@ class ComponentTree(object):
                 best_node = key
 
         return min_score, sum_comparisons+len(children), best_node
-
-        
         
     def find_instance(self, instance, sim_list):
         if self.root_id is None:
@@ -85,7 +85,6 @@ class ComponentTree(object):
             best_node = self._find_best_node(children, instance, sim_list)
             
             if best_node is None:
-                best_node = self.nodes[children[0]]._parent
                 best_node_found = True
 
             if self.nodes[best_node].confidence == 1.0:

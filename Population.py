@@ -1,7 +1,6 @@
 __author__ = """    Andrew Temlyakov (temlyaka@email.sc.edu)    """
 
 from numpy import *
-from scipy import stats
 from Evaluation import *
 import pylab as pl
 
@@ -35,7 +34,10 @@ class Population(Evaluation):
         else:
             super(Population, self).print_self(matrix_name)
 
-    def generate_diff(self, method="dice", k=20):
+    def generate_diff(self, method="dice", 
+                            k=None, 
+                            k_fixed=False, 
+                            alpha=0.3):
         """ Given a similarity matrix generate a 
             new similarity matrix based on the similarity
             of the top k closest matches for each pair of 
@@ -44,18 +46,44 @@ class Population(Evaluation):
 
         base_matrix = self.affinity_matrices["base_matrix"]
         processed_matrix = zeros_like(base_matrix)
-        
-        #Fixed k
+       
+        if k is None:
+            print "k not set. Finding a good value..."
+            k = self._get_k()
+            print "Found k:", k
+
+        if k_fixed is True:
+            k_i = k 
+        else:
+            upper_bound = k     
+            lower_bound = int(upper_bound * alpha) + 1
+      
         idx_top_k = base_matrix.argsort(axis = 1)[:, 0:k]
         
-        #Progress bar stuff
-        #prog = pb.progressBar(0, self.total_instances, 77)
-        #oldprog = str(prog)
+        print "Building new similarity matrix..." 
+        """ start progress bar """
+        prog = pb.progressBar(0, self.total_instances, 77)
+        oldprog = str(prog)
+        """ end progress bar """
 
         for i in xrange(self.total_instances):
-            a = set(idx_top_k[i, 0:k])
+            #a = set(idx_top_k[i, :])
+            shape_ranks = idx_top_k[i, :]           
             for j in xrange(i + 1, self.total_instances):
-                b = set(idx_top_k[j, 0:k])
+
+                if k_fixed is not True:
+                    j_idx = where(shape_ranks == j)[0]
+
+                    if not j_idx:
+                        k_i = upper_bound
+                    else:
+                        k_i = j_idx[0] + 1
+                    
+                        if k_i < lower_bound:
+                            k_i = lower_bound
+               
+                a = set(idx_top_k[i, 0:k_i]) 
+                b = set(idx_top_k[j, 0:k_i])
                 
                 if method is "dice":
                     distance = 1 - self._dice_set_diff(a, b)
@@ -67,13 +95,14 @@ class Population(Evaluation):
                 
                 processed_matrix[i, j] = distance
 
-            #More progress bar stuff
-            #prog.updateAmount(i)
-            #if oldprog != str(prog):
-                #print prog, '\r',
-                #sys.stdout.flush()
-                #oldprog = str(prog)
-        #print '\n'
+            """ start progress bar """
+            prog.updateAmount(i)
+            if oldprog != str(prog):
+                print prog, '\r',
+                sys.stdout.flush()
+                oldprog = str(prog)
+        print '\n'
+        """ end progress bar """
         
         processed_matrix += processed_matrix.transpose()
         self.affinity_matrices["processed_matrix"] = processed_matrix
@@ -93,19 +122,8 @@ class Population(Evaluation):
         return jaccard_index
 
     def _get_k(self):
-        K_list = []
-        for i in xrange(self.total_instances):
-            sim_row = self.affinity_matrices["base_matrix"][i, :]
-
-            """ delete the score with itself (0) """
-            sim_row = delete(sim_row, i)
-
-            mu = mean(sim_row)
-            sd = std(sim_row)
-
-            K_list.append(sum([s < (mu - 2*sd) for s in sim_row]))
-
-        return stats.mode(K_list), median(K_list), mean(K_list)
+        self._balance_histograms()        
+        return int(mean(self._k_list))
 
     def _build_histogram(self, sim_row):
         """ This method computes a histogram for a similarity row, 
@@ -121,13 +139,10 @@ class Population(Evaluation):
 
         mu = mean(sim_row)
         sd = std(sim_row)
-        v = var(sim_row)
-
-        #print "mu: ", mu, "std: ", sd, "var: ", v
     
         hist = zeros(num_bins+2)
 
-        for j in range(len(hist)):
+        for j in xrange(len(hist)):
             hist[j] = sum([s < mu - num_sd*sd for s in sim_row]) - sum(hist)
             num_sd = num_sd - bin_width
 
@@ -143,19 +158,22 @@ class Population(Evaluation):
 
     def _balance_histograms(self):       
         base_matrix = self.affinity_matrices["base_matrix"]
+
+        """ start progress bar """
+        prog = pb.progressBar(0, self.total_instances, 77)
+        oldprog = str(prog)
+        """ end progress bar """
  
-        for i in range(self.total_instances):
-            #print "i:", i
+        for i in xrange(self.total_instances):
             histogram = self._build_histogram(base_matrix[i,:])
-            #print histogram
-            #self._plot_histogram(histogram)
     
             max_cost = -inf
             num_bins = 1
 
-            for j in range(2, len(histogram)+1):
-                #Explicitely create deep copies,
-                #Getting shallow copies, otherwise (Python 2.6)
+            for j in xrange(2, len(histogram)+1):
+                """ Explicitely create deep copies,
+                    Getting shallow copies, otherwise (Python 2.6)
+                """
                 temp_hist = histogram.copy()[:j]
                 mu = ceil(mean(temp_hist))
                 cost = 0
@@ -163,10 +181,7 @@ class Population(Evaluation):
                     max_list = where(max(temp_hist) == temp_hist)[0]
                     min_list = where(min(temp_hist) == temp_hist)[0]
 
-                    #Weight points on distance 
-                    #cost += min_list[-1] - max_list[0]
-                    
-                    #Cost is 1 regardless of distance
+                    """ Cost is 1 regardless of distance """
                     if min_list[-1] > max_list[0]:
                         cost += 1
                     else:
@@ -182,7 +197,16 @@ class Population(Evaluation):
             k = sum(histogram[:num_bins])
             self._cost_list[i] = max_cost 
             self._num_bins_list[i] = num_bins
-            self._k_list[i] = k  
+            self._k_list[i] = k 
+            
+            """ start progress bar """
+            prog.updateAmount(i)
+            if oldprog != str(prog):
+                print prog, '\r',
+                sys.stdout.flush()
+                oldprog = str(prog)
+        print '\n'
+        """ end progress bar """
             
              
 def dice_fractions(k):
