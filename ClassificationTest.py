@@ -24,11 +24,11 @@ for idx in range(start_idx, end_idx):
     test_mat = delete(temp_mat, s_[idx], axis = 1)
 
     p = Population(test_mat, 20, 70)
-    processed_matrix = p.generate_diff(method="dice", k=13)
+    processed_matrix = p.generate_diff(method="dice", k=13, k_fixed=True)
 
     k_list = delete(key_list, idx)
     ctree = ComponentTree(test_mat, processed_matrix, k_list, 13)
-    ctree.build_tree("dynamic")
+    ctree.build_tree("bottomup")
 
 
     sim_list = delete(cost_mat[idx,:], idx)

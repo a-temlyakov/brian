@@ -85,9 +85,9 @@ class ComponentTree(object):
             best_node = self._find_best_node(children, instance, sim_list)
             
             if best_node is None:
+                best_node = self.nodes[children[0]]._parent
                 best_node_found = True
-
-            if self.nodes[best_node].confidence == 1.0:
+            elif self.nodes[best_node].confidence == 1.0:
                 best_node_found = True
 
         return best_node, sum_comparisons
@@ -106,7 +106,7 @@ class ComponentTree(object):
         
         return best_node
 
-    def build_tree(self, tree_type="static"):
+    def build_tree(self, tree_type="bottomup"):
         """ Entry build_tree function
         """
 
@@ -117,19 +117,19 @@ class ComponentTree(object):
             self.root_id = None
             self.nodes = {}
 
-        if tree_type is "static":
-            #print "Generating a top-down static tree!"
+        if tree_type is "topdown":
+            """ Generating a top-down static tree """
             self.root_id = 0
             idx_map = asanyarray(range(len(self.base_affinity_matrix)))
             self._build_tree_static(self.proc_affinity_matrix, \
                                     1.0, \
                                     None, \
                                     idx_map)
-        elif tree_type is "dynamic":
-            #print "Generating a bottom-up dynamic tree!"
+        elif tree_type is "bottomup":
+            """ Generating a bottom-up dynamic tree """
             self._build_tree_dynamic()
         else:
-            raise ValueError("Tree type does not exist! Currently Implemented: static, dynamic")
+            raise ValueError("Tree type does not exist! Currently implemented: topdown, bottomup")
   
         #print "Cleaning tree..." 
         self._clean_tree() 
@@ -180,7 +180,8 @@ class ComponentTree(object):
         c = Components(self.proc_affinity_matrix)
         #Build the bottom level
         components, comp_mat = c.get_components(fractions.next(), 
-                                                self.proc_affinity_matrix)
+                                                self.proc_affinity_matrix,
+                                                strongly_connected=True)
         for component in components:
             base_mat = self.base_affinity_matrix[component,:][:,component]
             proc_mat = self.proc_affinity_matrix[component,:][:,component]
@@ -193,7 +194,7 @@ class ComponentTree(object):
         for fraction in fractions:
             temp_offset += len(components) 
             c = Components(comp_mat)
-            components, comp_mat = c.get_components(fraction, comp_mat)
+            components, comp_mat = c.get_components(fraction, comp_mat, True)
             for component in components:
                 instances = []
                 for instance in component:
