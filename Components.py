@@ -35,8 +35,9 @@ class Components(object):
             self._connected_components = \
                         nx.connected_components(similarity_graph)
         else:
+            directed_graph = similarity_graph.to_directed()
             self._connected_components = \
-                        nx.strongly_connected_components(similarity_graph)
+                        nx.strongly_connected_components(directed_graph)
 
         self._total_components = len(self._connected_components)
         self._component_affinity_matrix = \
