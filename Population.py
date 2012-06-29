@@ -8,34 +8,49 @@ import pylab as pl
 import sys
 import ProgressBar as pb
 
-
-
-class Population(Evaluation):
+class Population(object):
     def __init__(self, affinity_matrix, instances_per_class, num_classes, \
                  types=None):
-        Evaluation.__init__(self, affinity_matrix, instances_per_class, \
-                            num_classes, types)
-        self.affinity_matrices["processed_matrix"] = None
-
+        
+        #Check all input
+        if(type(affinity_matrix).__name__ != 'ndarray'):
+            raise ValueError("Similarity matrix must be a numpy array.")
+        if(instances_per_class <= 0):
+            raise ValueError("Must have at least 1 instance per class.")
+        if(num_classes <= 0):
+            raise ValueError("Must have at least 1 class of instances.")
+        
+        #Public variables
+        self.affinity_matrix = affinity_matrix
+        self.processed_matrix = zeros_like(self.affinity_matrix)
+        self.instances_per_class = instances_per_class
+        self.number_of_classes = num_classes
+        self.total_instances = len(self.affinity_matrix)
+        
+        #Private variables (values may change)
         self._cost_list = [0] * self.total_instances
         self._num_bins_list = [0] * self.total_instances
         self._k_list = [0] * self.total_instances
-
-    def bullseye(self, total_instances=1, matrix_name = None):
-        if matrix_name is None:
-            super(Population, self).bullseye(total_instances, 
-                                             "processed_matrix")
-        else:
-            super(Population, self).bullseye(total_instances, matrix_name)
     
-    def print_self(self, matrix_name = None):
-        if matrix_name is None:
-            super(Population, self).print_self("processed_matrix")
-        else:
-            super(Population, self).print_self(matrix_name)
+    def print_self(self):
+        print "----------------------"
+        print "| Public Variables:  |"
+        print "----------------------"
+        print "Original Matrix: \n", self.affinity_matrix
+        print "Processed Matrix: \n", self.processed_matrix
+        print "Instances per Class: ", self.instances_per_class
+        print "Number of Instance Classes: ", self.number_of_classes
+        print ""
+        print "----------------------"
+        print "| Private Variables: |"
+        print "----------------------"
+        print "Cost list: ", self._cost_list
+        print "Number of bins list: ", self._num_bins_list
+        print "K list: ", self._k_list
 
     def generate_diff(self, method="dice", 
                             k=None, 
+                            lower_bound=None,
                             k_fixed=False, 
                             alpha=0.3):
         """ Given a similarity matrix generate a 
@@ -43,9 +58,6 @@ class Population(Evaluation):
             of the top k closest matches for each pair of 
             shape instances
         """
-
-        base_matrix = self.affinity_matrices["base_matrix"]
-        processed_matrix = zeros_like(base_matrix)
        
         if k is None:
             print "k not set. Finding a good value..."
@@ -56,14 +68,17 @@ class Population(Evaluation):
             k_i = k 
         else:
             upper_bound = k     
-            lower_bound = int(upper_bound * alpha) + 1
-      
-        idx_top_k = base_matrix.argsort(axis = 1)[:, 0:k]
+            
+            if lower_bound is None:
+                lower_bound = int(upper_bound * alpha) + 1
+                
+
+        idx_top_k = self.affinity_matrix.argsort(axis = 1)[:, 0:k]
         
-        print "Building new similarity matrix..." 
+        #print "Building new similarity matrix..." 
         """ start progress bar """
-        prog = pb.progressBar(0, self.total_instances, 77)
-        oldprog = str(prog)
+        #prog = pb.progressBar(0, self.total_instances, 77)
+        #oldprog = str(prog)
         """ end progress bar """
 
         for i in xrange(self.total_instances):
@@ -93,20 +108,19 @@ class Population(Evaluation):
                     raise ValueError("Comparison algorithm not found. \
                                       Currently implemented: dice, jaccard")
                 
-                processed_matrix[i, j] = distance
+                self.processed_matrix[i, j] = distance
 
             """ start progress bar """
-            prog.updateAmount(i)
-            if oldprog != str(prog):
-                print prog, '\r',
-                sys.stdout.flush()
-                oldprog = str(prog)
-        print '\n'
+            #prog.updateAmount(i)
+            #if oldprog != str(prog):
+                #print prog, '\r',
+                #sys.stdout.flush()
+                #oldprog = str(prog)
+        #print '\n'
         """ end progress bar """
         
-        processed_matrix += processed_matrix.transpose()
-        self.affinity_matrices["processed_matrix"] = processed_matrix
-        return processed_matrix
+        self.processed_matrix += self.processed_matrix.transpose()
+        return self.processed_matrix
 
     def _dice_set_diff(self, a, b):
         """ Compute the Dice's similarity of sets a and b """
@@ -157,15 +171,13 @@ class Population(Evaluation):
         pl.show() 
 
     def _balance_histograms(self):       
-        base_matrix = self.affinity_matrices["base_matrix"]
-
         """ start progress bar """
         prog = pb.progressBar(0, self.total_instances, 77)
         oldprog = str(prog)
         """ end progress bar """
  
         for i in xrange(self.total_instances):
-            histogram = self._build_histogram(base_matrix[i,:])
+            histogram = self._build_histogram(self.affinity_matrix[i,:])
     
             max_cost = -inf
             num_bins = 1

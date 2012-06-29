@@ -12,11 +12,9 @@ class Evaluation(object):
             raise ValueError("Must have at least 1 instance per class.")
         if(num_classes <= 0):
             raise ValueError("Must have at least 1 class of instances.")
-        #if(len(affinity_matrix) != instances_per_class * num_classes):
-        #    raise ValueError("Matrix does not match classes*instances/class")    
+        
         #Public variables
-        self.affinity_matrices = {}
-        self.affinity_matrices["base_matrix"] = affinity_matrix
+        self.affinity_matrix = affinity_matrix
         self.instances_per_class = instances_per_class
         self.number_of_classes = num_classes
         self.total_instances = len(affinity_matrix)
@@ -28,16 +26,11 @@ class Evaluation(object):
         self._similarity_score = 0.
         self._class_accuracy = zeros(self.total_instances)
      
-    def print_self(self, matrix_name = None):
-        if matrix_name is None:
-            affinity_matrix = self.affinity_matrices["base_matrix"]
-        else:
-            affinity_matrix = self.affinity_matrices[matrix_name]
-
+    def print_self(self):
         print "----------------------"
         print "| Public Variables:  |"
         print "----------------------"
-        print "Similarity Matrix: \n", affinity_matrix
+        print "Similarity Matrix: \n", self.affinity_matrix
         print "Instances per Class: ", self.instances_per_class
         print "Number of Instance Classes: ", self.number_of_classes
         print ""
@@ -51,12 +44,6 @@ class Evaluation(object):
         """ Standard Bullseye test                        
             All classes have the same number of instances 
         """  
-        
-        if matrix_name is None:
-            aff_mat = self.affinity_matrices["base_matrix"]
-        else:
-            #to-do: raise error if matrix not found
-            aff_mat = self.affinity_matrices[matrix_name]
          
         #When obtaining bullseye for lower number of instances than there are
         #instances per class, need to divide by number of instances being
@@ -66,7 +53,7 @@ class Evaluation(object):
         else:
             divisor = self.instances_per_class
 
-        sort_idx = aff_mat.argsort(axis=1)
+        sort_idx = self.affinity_matrix.argsort(axis=1)
         idx_top_k = sort_idx[:, 0:top_instances]
         
         #class_accuracy = zeros(self.total_instances)
@@ -85,8 +72,7 @@ class Evaluation(object):
         return self._similarity_score
 
     def nn_classification(self):
-        aff_mat = self.affinity_matrices["base_matrix"]
-        sort_idx = aff_mat.argsort(axis = 1)
+        sort_idx = self.affinity_matrix.argsort(axis = 1)
         idx_top_k = sort_idx[:, 1]
         print idx_top_k
         
