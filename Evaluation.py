@@ -1,4 +1,4 @@
-__author__ = """    Andrew Temlyakov (temlyaka@email.sc.edu)    """
+__author__ = """    Andrew Temlyakov (temlyaka@gmail.com)    """
 
 from numpy import *
 
@@ -40,14 +40,15 @@ class Evaluation(object):
         print "Similarity score: ", self._similarity_score
         print "Class accuracy: ", self._class_accuracy
                         
-    def bullseye(self, top_instances = 1, matrix_name = None):
+    def bullseye(self, top_instances = 1):
         """ Standard Bullseye test                        
             All classes have the same number of instances 
         """  
          
-        #When obtaining bullseye for lower number of instances than there are
-        #instances per class, need to divide by number of instances being
-        #retrieved
+        """ When obtaining bullseye for lower number of instances than 
+            there are instances per class, need to divide by number of 
+            instances being retrieved
+        """
         if(top_instances < self.instances_per_class):
             divisor = top_instances
         else:
@@ -56,7 +57,6 @@ class Evaluation(object):
         sort_idx = self.affinity_matrix.argsort(axis=1)
         idx_top_k = sort_idx[:, 0:top_instances]
         
-        #class_accuracy = zeros(self.total_instances)
         query_top = 0
         for i in range(self.total_instances):
             if(mod(i,self.instances_per_class) == 0):
@@ -67,7 +67,6 @@ class Evaluation(object):
             self._class_accuracy[i] = float(sum(res)) / divisor
         
         self._similarity_score = mean(self._class_accuracy)
-        #self._class_accuracy = class_accuracy
             
         return self._similarity_score
 
