@@ -1,7 +1,6 @@
-__author__ = """    Andrew Temlyakov (temlyaka@email.sc.edu)    """
+__author__ = """    Andrew Temlyakov (temlyaka@gmail.com)    """
 
 from numpy import *
-from Evaluation import *
 import pylab as pl
 
 #Used for progress bar
@@ -10,9 +9,9 @@ import ProgressBar as pb
 
 class Population(object):
     def __init__(self, affinity_matrix, instances_per_class, num_classes, \
-                 types=None):
+                 types=None, verbose=False):
         
-        #Check all input
+        """ Check all input """
         if(type(affinity_matrix).__name__ != 'ndarray'):
             raise ValueError("Similarity matrix must be a numpy array.")
         if(instances_per_class <= 0):
@@ -20,16 +19,17 @@ class Population(object):
         if(num_classes <= 0):
             raise ValueError("Must have at least 1 class of instances.")
         
-        #Public variables
+        """ Public variables """
         self.affinity_matrix = affinity_matrix
         self.processed_matrix = zeros_like(self.affinity_matrix)
         self.instances_per_class = instances_per_class
         self.number_of_classes = num_classes
         self.total_instances = len(self.affinity_matrix)
+        self.verbose = verbose
         
-        #Private variables (values may change)
+        """ Private variables (values may change) """
         self._cost_list = [0] * self.total_instances
-        self._num_bins_list = [0] * self.total_instances
+        self._bin_count_list = [0] * self.total_instances
         self._k_list = [0] * self.total_instances
     
     def print_self(self):
@@ -40,12 +40,13 @@ class Population(object):
         print "Processed Matrix: \n", self.processed_matrix
         print "Instances per Class: ", self.instances_per_class
         print "Number of Instance Classes: ", self.number_of_classes
+        print "Verbose? ", self.verbose
         print ""
         print "----------------------"
         print "| Private Variables: |"
         print "----------------------"
         print "Cost list: ", self._cost_list
-        print "Number of bins list: ", self._num_bins_list
+        print "Bin count list: ", self._bin_count_list
         print "K list: ", self._k_list
 
     def generate_diff(self, method="dice", 
@@ -60,29 +61,27 @@ class Population(object):
         """
        
         if k is None:
-            print "k not set. Finding a good value..."
+            if self.verbose: print "k not set. Finding a good value..."
             k = self._get_k()
-            print "Found k:", k
+            if self.verbose: print "Found k:", k
 
         if k_fixed is True:
             k_i = k 
         else:
             upper_bound = k     
-            
-            if lower_bound is None:
+            if lower_bound is None: 
                 lower_bound = int(upper_bound * alpha) + 1
-                
 
         idx_top_k = self.affinity_matrix.argsort(axis = 1)[:, 0:k]
-        
-        #print "Building new similarity matrix..." 
-        """ start progress bar """
-        #prog = pb.progressBar(0, self.total_instances, 77)
-        #oldprog = str(prog)
-        """ end progress bar """
+       
+        if self.verbose:  
+            print "Building new similarity matrix..." 
+            """ start progress bar """
+            prog = pb.progressBar(0, self.total_instances, 77)
+            oldprog = str(prog)
+            """ end progress bar """
 
         for i in xrange(self.total_instances):
-            #a = set(idx_top_k[i, :])
             shape_ranks = idx_top_k[i, :]           
             for j in xrange(i + 1, self.total_instances):
 
@@ -110,15 +109,16 @@ class Population(object):
                 
                 self.processed_matrix[i, j] = distance
 
-            """ start progress bar """
-            #prog.updateAmount(i)
-            #if oldprog != str(prog):
-                #print prog, '\r',
-                #sys.stdout.flush()
-                #oldprog = str(prog)
-        #print '\n'
-        """ end progress bar """
+            if self.verbose:
+                """ start progress bar """
+                prog.updateAmount(i)
+                if oldprog != str(prog):
+                    print prog, '\r',
+                    sys.stdout.flush()
+                    oldprog = str(prog)
+            """ end progress bar """
         
+        if self.verbose: print '\n'
         self.processed_matrix += self.processed_matrix.transpose()
         return self.processed_matrix
 
@@ -139,7 +139,7 @@ class Population(object):
         self._balance_histograms()        
         return int(mean(self._k_list))
 
-    def _build_histogram(self, sim_row):
+    def _build_histogram(self, sim_row, num_bins=16, bin_width=0.25):
         """ This method computes a histogram for a similarity row, 
             where bins are determined by standard deviations of the 
             pair-wise similarities for a given template instance 
@@ -147,10 +147,8 @@ class Population(object):
             Computes only the left side of the histogram, that is
             all similarities that are less than the mean
         """    
-        num_bins = 16
-        bin_width = 0.25
         num_sd = int(num_bins * bin_width)
-
+        
         mu = mean(sim_row)
         sd = std(sim_row)
     
@@ -163,24 +161,37 @@ class Population(object):
         return hist 
  
     def _plot_histogram(self, histogram):
+        """ Used this method to get some histogram plots for
+            my dissertation. It's very rough and likely needs tweaking, 
+            but keeping it here for reference.
+        """
         pos = arange(len(histogram))
         pl.bar(pos, histogram, 0.90, color='b')
-        pl.xticks(pos+0.90/2., ('-4','','','','-3','','','','-2','','','','-1','','','','0'))
+        pl.xticks(pos+0.90/2., ('-4','','','',
+                                '-3','','','',
+                                '-2','','','',
+                                '-1','','','',
+                                '0'))
         pl.ylabel('Bin Size')
         pl.xlabel('Number of standard deviations away from the mean')
         pl.show() 
 
-    def _balance_histograms(self):       
-        """ start progress bar """
-        prog = pb.progressBar(0, self.total_instances, 77)
-        oldprog = str(prog)
-        """ end progress bar """
+    def _balance_histograms(self):    
+        """ Compute the cost of balancing a histogram for each
+            row in the affinity matrix
+        """
+        
+        if self.verbose:   
+            """ start progress bar """
+            prog = pb.progressBar(0, self.total_instances, 77)
+            oldprog = str(prog)
+            """ end progress bar """
  
         for i in xrange(self.total_instances):
             histogram = self._build_histogram(self.affinity_matrix[i,:])
     
             max_cost = -inf
-            num_bins = 1
+            bin_count = 1
 
             for j in xrange(2, len(histogram)+1):
                 """ Explicitely create deep copies,
@@ -204,22 +215,22 @@ class Population(object):
 
                 if cost > max_cost:
                     max_cost = cost
-                    num_bins = j
+                    bin_count = j
 
-            k = sum(histogram[:num_bins])
+            k = sum(histogram[:bin_count])
             self._cost_list[i] = max_cost 
-            self._num_bins_list[i] = num_bins
+            self._bin_count_list[i] = bin_count
             self._k_list[i] = k 
-            
-            """ start progress bar """
-            prog.updateAmount(i)
-            if oldprog != str(prog):
-                print prog, '\r',
-                sys.stdout.flush()
-                oldprog = str(prog)
-        print '\n'
-        """ end progress bar """
-            
+        
+            if self.verbose:            
+                """ start progress bar """
+                prog.updateAmount(i)
+                if oldprog != str(prog):
+                    print prog, '\r',
+                    sys.stdout.flush()
+                    oldprog = str(prog)
+                """ end progress bar """
+        if self.verbose: print '\n'            
              
 def dice_fractions(k):
     """ generator creates all possible discrete values
