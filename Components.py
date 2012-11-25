@@ -1,4 +1,4 @@
-__author__ = """    Andrew Temlyakov (temlyaka@email.sc.edu)    """
+__author__ = """    Andrew Temlyakov (temlyaka@gmail.com)    """
 
 from Population import *
 from operator import itemgetter
@@ -11,12 +11,6 @@ class Components(object):
         self._component_affinity_matrix = None
         self._total_components = 1
 
-    def print_self(self):
-        print "Affinity Matrix: ", self.affinity_matrix
-        print "Connected Components: ", self._connected_components
-        print "Component Affinity Matrix: ", self._component_affinity_matrix
-        print "Total Components: ", self._total_components
-        
     def get_components(self, threshold, 
                              affinity_matrix=None, 
                              strongly_connected=False):
@@ -110,4 +104,10 @@ class Components(object):
                                         float(distances[key,target])
         
         return comp_matrix
-
+    
+    def print_self(self):
+        print "Affinity Matrix: ", self.affinity_matrix
+        print "Connected Components: ", self._connected_components
+        print "Component Affinity Matrix: ", self._component_affinity_matrix
+        print "Total Components: ", self._total_components
+        

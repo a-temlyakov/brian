@@ -5,7 +5,8 @@ from numpy import *
 class Evaluation(object):
     def __init__(self, affinity_matrix, instances_per_class, num_classes, \
                  types=None):
-        #Check all input
+        
+        """ Check all input """
         if(type(affinity_matrix).__name__ != 'ndarray'):
             raise ValueError("Similarity matrix must be a numpy array.")
         if(instances_per_class <= 0):
@@ -13,7 +14,7 @@ class Evaluation(object):
         if(num_classes <= 0):
             raise ValueError("Must have at least 1 class of instances.")
         
-        #Public variables
+        """ Public variables """
         self.affinity_matrix = affinity_matrix
         self.instances_per_class = instances_per_class
         self.number_of_classes = num_classes
@@ -22,24 +23,10 @@ class Evaluation(object):
         if types is not None:
             self.types = types
                 
-        #Private variables (values may change)
+        """ Private variables (values may change) """
         self._similarity_score = 0.
         self._class_accuracy = zeros(self.total_instances)
      
-    def print_self(self):
-        print "----------------------"
-        print "| Public Variables:  |"
-        print "----------------------"
-        print "Similarity Matrix: \n", self.affinity_matrix
-        print "Instances per Class: ", self.instances_per_class
-        print "Number of Instance Classes: ", self.number_of_classes
-        print ""
-        print "----------------------"
-        print "| Private Variables: |"
-        print "----------------------"
-        print "Similarity score: ", self._similarity_score
-        print "Class accuracy: ", self._class_accuracy
-                        
     def bullseye(self, top_instances = 1):
         """ Standard Bullseye test                        
             All classes have the same number of instances 
@@ -83,9 +70,24 @@ class Evaluation(object):
                 correct += 1
 
         return correct / float(self.total_instances)
+    
+    def print_self(self):
+        print "----------------------"
+        print "| Public Variables:  |"
+        print "----------------------"
+        print "Similarity Matrix: \n", self.affinity_matrix
+        print "Instances per Class: ", self.instances_per_class
+        print "Number of Instance Classes: ", self.number_of_classes
+        print ""
+        print "----------------------"
+        print "| Private Variables: |"
+        print "----------------------"
+        print "Similarity score: ", self._similarity_score
+        print "Class accuracy: ", self._class_accuracy
 
 def get_shape_name(shape_names, index, shapes_per_class):
     """ Returns an actual shape name, e.g. 'Bone-18'
+        This is a rough method tested only on the MPEG-7 dataset
     """
     shape_idx = int(ceil(float(index+1)/float(shapes_per_class)))
     shape_num = (index+1) - shapes_per_class * shape_idx + shapes_per_class

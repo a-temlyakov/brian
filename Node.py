@@ -1,4 +1,4 @@
-__author__ = """    Andrew Temlyakov (temlyaka@email.sc.edu)    """
+__author__ = """    Andrew Temlyakov (temlyaka@gmail.com)    """
 
 from numpy import *
 import networkx as nx

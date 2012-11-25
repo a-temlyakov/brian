@@ -1,3 +1,8 @@
+"""
+    This code is taken from here (I am NOT the author):
+    http://code.activestate.com/recipes/168639-progress-bar-class/
+"""
+
 class progressBar:
 	def __init__(self, minValue = 0, maxValue = 10, totalWidth=12):
 		self.progBar = "[]"   # This holds the progress bar string

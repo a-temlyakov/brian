@@ -32,23 +32,6 @@ class Population(object):
         self._bin_count_list = [0] * self.total_instances
         self._k_list = [0] * self.total_instances
     
-    def print_self(self):
-        print "----------------------"
-        print "| Public Variables:  |"
-        print "----------------------"
-        print "Original Matrix: \n", self.affinity_matrix
-        print "Processed Matrix: \n", self.processed_matrix
-        print "Instances per Class: ", self.instances_per_class
-        print "Number of Instance Classes: ", self.number_of_classes
-        print "Verbose? ", self.verbose
-        print ""
-        print "----------------------"
-        print "| Private Variables: |"
-        print "----------------------"
-        print "Cost list: ", self._cost_list
-        print "Bin count list: ", self._bin_count_list
-        print "K list: ", self._k_list
-
     def generate_diff(self, method="dice", 
                             k=None, 
                             lower_bound=None,
@@ -231,6 +214,23 @@ class Population(object):
                     oldprog = str(prog)
                 """ end progress bar """
         if self.verbose: print '\n'            
+    
+    def print_self(self):
+        print "----------------------"
+        print "| Public Variables:  |"
+        print "----------------------"
+        print "Original Matrix: \n", self.affinity_matrix
+        print "Processed Matrix: \n", self.processed_matrix
+        print "Instances per Class: ", self.instances_per_class
+        print "Number of Instance Classes: ", self.number_of_classes
+        print "Verbose? ", self.verbose
+        print ""
+        print "----------------------"
+        print "| Private Variables: |"
+        print "----------------------"
+        print "Cost list: ", self._cost_list
+        print "Bin count list: ", self._bin_count_list
+        print "K list: ", self._k_list
              
 def dice_fractions(k):
     """ generator creates all possible discrete values

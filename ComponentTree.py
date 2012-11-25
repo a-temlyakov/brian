@@ -1,4 +1,4 @@
-__author__ = """    Andrew Temlyakov (temlyaka@email.sc.edu)    """
+__author__ = """    Andrew Temlyakov (temlyaka@gmail.com)    """
 
 from Node import *
 from Components import *
@@ -98,7 +98,6 @@ class ComponentTree(object):
         for child in children:
             p_id = self.nodes[child].prototype_id
             sim_score = sim_list[p_id]
-            #sim_score = self.base_affinity_matrix[index, p_id]
             if sim_score <= self.nodes[child].max_distance and \
                 sim_score < min_score:
                min_score = sim_score
@@ -131,7 +130,6 @@ class ComponentTree(object):
         else:
             raise ValueError("Tree type does not exist! Currently implemented: topdown, bottomup")
   
-        #print "Cleaning tree..." 
         self._clean_tree() 
 
     def _build_tree_static(self, proc_mat, fraction, parent_id, idx_map):
