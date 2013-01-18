@@ -2,13 +2,14 @@
 A retrieval/classification framework developed to improve accuracy by utilizing
 population cues.
 
-## background
+## information
 This was developed as part of my dissertation on shape retrieval. The
 dissertation will give the most in-depth overview of all algorithms in the
 framework, while the conference paper covers the most interesting parts
 
 1. [Improving Shape Classification Using Perceptual and
-Population Cues](http://cse.sc.edu/~temlyaka/publications/wacv13_temlyakov.pdf) - Dissertation (PDF)
+Population
+Cues](http://cse.sc.edu/~temlyaka/publications/Temlyakov_Dissertation.pdf) - Dissertation (PDF)
 2. [Shape and Image Retrieval by Organizing Instances Using Population
 Cues](http://cse.sc.edu/~temlyaka/publications/wacv13_temlyakov.pdf) -  IEEE
 Workshop on the Applications of Computer Vision (WACV), Clearwater, FL, 2013
@@ -19,7 +20,7 @@ Assuming some familiarity with previous works and the
 [MPEG-7](http://cse.sc.edu/~temlyaka/datasets.html) dataset.
 
 The algorithms only need a similiarty matrix that can be used to rank 
-the instances of the dataset.
+the instances of any dataset.
 
 ## usage
 
