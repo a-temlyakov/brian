@@ -8,14 +8,13 @@ dissertation will give the most in-depth overview of all algorithms in the
 framework, while the conference paper covers the most interesting parts
 
 1. [Improving Shape Classification Using Perceptual and
-Population Cues](http://cse.sc.edu/~temlyaka/publications/wacv13_temlyakov.pdf)
-- Dissertation (PDF)
+Population Cues](http://cse.sc.edu/~temlyaka/publications/wacv13_temlyakov.pdf) - Dissertation (PDF)
 2. [Shape and Image Retrieval by Organizing Instances Using Population
 Cues](http://cse.sc.edu/~temlyaka/publications/wacv13_temlyakov.pdf) -  IEEE
 Workshop on the Applications of Computer Vision (WACV), Clearwater, FL, 2013
 (PDF)
 
-Data: [SS+IDSC data](http://cse.sc.edu/~temlyaka/datasets/data.zip)
+Data: [SS+IDSC data](http://cse.sc.edu/~temlyaka/datasets/data.zip).
 Assuming some familiarity with previous works and the
 [MPEG-7](http://cse.sc.edu/~temlyaka/datasets.html) dataset.
 
@@ -26,7 +25,7 @@ the instances of the dataset.
 
 The driver.py has sample code snippets to illustrate algorithm usage.
 
-## License
+## license
 
 Copyright 2013 Andrew Temlyakov. All rights reserved.
 
@@ -49,7 +48,7 @@ AND ANY EXPRESS OR IMPLIED
 WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
 WARRANTIES OF MERCHANTABILITY AND
 FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO
-EVENT SHALL JARRELL WAGGONER OR
+EVENT SHALL ANDREW TEMLYAKOV OR
 CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
 INCIDENTAL, SPECIAL, EXEMPLARY, OR
 CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
